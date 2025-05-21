@@ -1,0 +1,155 @@
+prompt_entity:
+    system_prompt: |
+        You are an expert in entity and relationship extraction. Given a text and a list of target entity types, extract structured information about the entities, their descriptions, relationships, and overarching themes.
+    completion_delimiter: <|COMPLETE|>
+    entity_types:
+        - Country
+        - Region
+        - Location
+        - Port
+        - Facility
+        - Contract
+        - Agreement
+        - Quota
+        - Regulation
+        - Policy
+        - DesignationStatus
+        - EligibilityCriteria
+        - TariffMeasure
+        - Product
+        - ProductCategory
+        - Material
+        - Industry
+        - Technology
+        - Shipment
+        - DeliveryStatus
+        - DemandForecast
+        - TradeFlow
+        - Date
+        - RiskEvent
+        - Crisis
+        - Issue
+        - LaborRight
+        - Mitigation
+        - EconomicIndicator
+        - Action
+        - Intention
+        - Effect
+        - Document
+        - ReviewProcess
+    examples: ''
+    updated_by: oogie
+    language: English
+    prompt_template: |
+        ---Goal---
+        Given a text document that is potentially relevant to this activity and a list of entity types,
+        identify all entities of those types and all relationships among the identified entities.
+        Use {language} as output language.
+
+        ---Entity Type Reference---
+        {entity_types_reference}
+        ---------------------------------
+
+        ---Steps---
+        1. Identify all entities. For each identified entity, extract the following:
+          - entity_name
+          - entity_type (one of: {entity_types})
+          - entity_description (detailed description of attributes and activities)
+          Format:
+          ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+        2. From step 1, identify all clearly related entity pairs and extract:
+          - source_entity, target_entity
+          - relationship_description
+          - relationship_keywords (high-level conceptual keywords)
+          - relationship_strength (1 to 10)
+          Format:
+          ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_keywords>{tuple_delimiter}<relationship_strength>)
+
+        3. Identify and summarize high-level concepts present in the document:
+          Format:
+          ("content_keywords"{tuple_delimiter}<high_level_keywords>)
+
+        4. Return all outputs as a single list, using **{record_delimiter}** as separator.
+          End the output with {completion_delimiter}.
+
+        ---Input Text---
+        Entity_types: [{entity_types}]
+        Text:
+        {input_text}
+
+        ---Output---
+    record_delimiter: '##'
+    entity_types_descriptions:
+        Country: Sovereign state participating in production, trade, regulation, or
+            diplomacy.
+        Region: Broader geographic or economic area (e.g., EU, Southeast Asia) used
+            for macro-level analysis.
+        Location: Specific city or locality referenced as the venue of an event or
+            activity.
+        Port: Sea or air port; include location, annual throughput, and key shipping
+            routes.
+        Facility: Factory, warehouse, or distribution center; include location, capacity,
+            and operator.
+        Contract: Binding supply or purchase agreement; include parties, term, value,
+            key terms, and Incoterms.
+        Agreement: Formal bilateral or multilateral trade/economic treaty or framework
+            between nations or organizations.
+        Quota: Numerical limit on imports/exports for a product or market, including
+            threshold and validity period.
+        Regulation: Statutory rule or directive; include effective date, issuing authority,
+            scope, and key provisions.
+        Policy: Strategic plan or guideline issued by a government or company; include
+            objectives and implementation scope.
+        DesignationStatus: Special status such as tariff privilege or sanction; include
+            granting body and validity period.
+        EligibilityCriteria: Conditions that must be met to qualify for a privilege,
+            program, or agreement.
+        TariffMeasure: Customs duty rate or adjustment; include HS code, rate, and
+            date of application.
+        Product: End product or component; include name/model, key specs, and market
+            application.
+        ProductCategory: Higher-level grouping of products (e.g., batteries, semiconductors).
+        Material: Raw material or sub-component; include grade/specification and sourcing
+            region.
+        Industry: Economic sector such as automotive, electronics, or pharmaceuticals.
+        Technology: Specific tech or process; include application area, maturity level,
+            and trade relevance.
+        Shipment: Individual consignment; include ID, origin, destination, date, and
+            volume.
+        DeliveryStatus: Latest status update for a shipment (In Transit, Delayed,
+            Delivered) plus timestamp.
+        DemandForecast: Projected demand for a product/region over a period; include
+            value, unit, and source.
+        TradeFlow: Aggregated import/export movement between regions or countries
+            over a time window.
+        Date: Calendar reference (exact date, month, quarter, or year) linked to events
+            or policies.
+        RiskEvent: Discrete event posing risk (natural disaster, sanction, strike);
+            include start date and impact.
+        Crisis: High-impact disruption affecting supply chains or trade relations.
+        Issue: Policy or trade concern under negotiation or dispute.
+        LaborRight: Worker-rights topic (e.g., forced labor); include legal basis
+            and compliance status.
+        Mitigation: Action plan to reduce risk (multi-sourcing, buffer stock); include
+            implementer and expected effect.
+        EconomicIndicator: Metric such as GDP, trade deficit, or PMI that gauges economic
+            or trade performance.
+        Action: Specific act (announce, impose, sign) taken by an entity at a given
+            time.
+        Intention: Stated objective or goal behind a policy or negotiation.
+        Effect: Observed or expected impact resulting from a policy, agreement, or
+            event.
+        Document: Official publication such as press release, report, or statement;
+            include title and issuer.
+        ReviewProcess: Formal evaluation or compliance check; include responsible
+            body, stages, and timeline.
+    description: |
+        Extract entities and their relationships from a given text based on specified types, and return structured representations for downstream knowledge graph construction.
+    tuple_delimiter: <|>
+    id: base_prompt_v1
+model:
+    model_name: gpt-4o-mini
+    temperature: 0.3
+    max_tokens: 2048
+    api_key: ${oc.env:TEAM1_OPENAI_API_KEY}
