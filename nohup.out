@@ -1,0 +1,58 @@
+🗑️ Cleared all existing nodes and relationships from database.
+📄 Loading node file: plant.csv as label :Plant
+📄 Loading node file: product.csv as label :Product
+🔗 Loading StorageLocation.csv as relationship type :CONNECTED_STORAGELOCATION
+🔗 Loading ProductGroup.csv as relationship type :CONNECTED_PRODUCTGROUP
+🔗 Loading ProductSubGroup.csv as relationship type :CONNECTED_PRODUCTSUBGROUP
+🔗 Loading Plant.csv as relationship type :CONNECTED_PLANT
+✅ CONNECTED_PRODUCTSUBGROUP relationships loaded.
+✅ CONNECTED_PRODUCTGROUP relationships loaded.
+✅ CONNECTED_PLANT relationships loaded.
+✅ CONNECTED_STORAGELOCATION relationships loaded.
+📈 Loading temporal data from FactoryIssue.csv
+📈 Loading temporal data from Production .csv
+📈 Loading temporal data from DeliveryTodistributor.csv
+📈 Loading temporal data from SalesOrder.csv
+📈 Loaded temporal data from ./data/supplychainGraph/Temporal Data/Unit/DeliveryTodistributor.csv as :DELIVERYTODISTRIBUTOR relationships
+📈 Loaded temporal data from ./data/supplychainGraph/Temporal Data/Unit/SalesOrder.csv as :SALESORDER relationships
+📈 Loaded temporal data from ./data/supplychainGraph/Temporal Data/Unit/Production .csv as :PRODUCTION relationships
+📈 Loaded temporal data from ./data/supplychainGraph/Temporal Data/Unit/FactoryIssue.csv as :FACTORYISSUE relationships
+🏁 All supplychain data loaded in parallel.
+Traceback (most recent call last):
+  File "/Users/oogie/Desktop/GraphRAG/OSSCA_GraphRAG/neo4j_load_thread.py", line 282, in <module>
+    load_documents_with_event_links_parallel('./data/ustr_2023_press_releases_tailed.csv')
+  File "/Users/oogie/Desktop/GraphRAG/OSSCA_GraphRAG/neo4j_load_thread.py", line 249, in load_documents_with_event_links_parallel
+    fut.result()
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/concurrent/futures/_base.py", line 451, in result
+    return self.__get_result()
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/concurrent/futures/_base.py", line 403, in __get_result
+    raise self._exception
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "/Users/oogie/Desktop/GraphRAG/OSSCA_GraphRAG/neo4j_load_thread.py", line 228, in _insert_document
+    session.execute_write(create_document_and_link_event, doc)
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/session.py", line 803, in execute_write
+    return self._run_transaction(
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/session.py", line 583, in _run_transaction
+    result = transaction_function(tx, *args, **kwargs)
+  File "/Users/oogie/Desktop/GraphRAG/OSSCA_GraphRAG/neo4j_load_thread.py", line 190, in create_document_and_link_event
+    tx.run("""
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/transaction.py", line 206, in run
+    result._tx_ready_run(query, parameters)
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/result.py", line 177, in _tx_ready_run
+    self._run(query, parameters, None, None, None, None, None, None)
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/result.py", line 236, in _run
+    self._attach()
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/work/result.py", line 430, in _attach
+    self._connection.fetch_message()
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/io/_common.py", line 184, in inner
+    func(*args, **kwargs)
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/io/_bolt.py", line 864, in fetch_message
+    res = self._process_message(tag, fields)
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/io/_bolt5.py", line 1208, in _process_message
+    response.on_failure(summary_metadata or {})
+  File "/opt/anaconda3/envs/graphrag/lib/python3.10/site-packages/neo4j/_sync/io/_common.py", line 254, in on_failure
+    raise self._hydrate_error(metadata)
+neo4j.exceptions.CypherSyntaxError: {code: Neo.ClientError.Statement.SyntaxError} {message: Invalid input '#': expected a graph pattern, 'FOREACH', 'ORDER BY', 'CALL', 'CREATE', 'LOAD CSV', 'DELETE', 'DETACH', 'FINISH', 'INSERT', 'LIMIT', 'MATCH', 'MERGE', 'NODETACH', 'OFFSET', 'ON', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'SKIP', 'UNION', 'UNWIND', 'USE', 'WITH' or <EOF> (line 3, column 46 (offset: 84))
+"        MERGE (d:Document {doc_id: $doc_id}) #병규님이 하신 것처럼 doc_id로 처리"
+                                              ^}

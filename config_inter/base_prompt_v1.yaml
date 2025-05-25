@@ -1,0 +1,98 @@
+model :
+  model_name: gpt-4o-mini
+  temperature: 0.3
+  max_tokens: 2048
+  api_key: ${oc.env:TEAM1_OPENAI_API_KEY}
+
+prompt_entity:
+  id: base_prompt_v1
+  updated_by : oogie
+  description: >
+    Extract entities and their relationships from a given text based on specified types,
+    and return structured representations for downstream knowledge graph construction.
+  language : "English"
+
+  examples:
+    - |
+      Example 2:
+      Source:
+      (""entity""<|>United States<|>Country<|>Sovereign state in North America; involved in trade relations and labor rights enforcement under USMCA.)##
+      (""entity""<|>Mexico<|>Country<|>Sovereign state in North America; subject of labor rights review under USMCA.)##
+      (""entity""<|>Mexico City<|>Location<|>Capital city of Mexico; location of Aerotransportes Mas de Carga, the airline under review.)##
+      (""entity""<|>Aerotransportes Mas de Carga<|>Facility<|>Cargo airline based in Mexico City; involved in the labor rights review regarding pilots' union rights.)##
+      (""entity""<|>USMCA<|>Agreement<|>United States-Mexico-Canada Agreement; trade agreement that includes provisions for labor rights and enforcement mechanisms.)##
+      (""entity""<|>Rapid Response Labor Mechanism<|>Policy<|>Labor rights enforcement mechanism under USMCA designed to address violations of workers' rights.)##
+      (""entity""<|>freedom of association and collective bargaining<|>LaborRight<|>Workers' rights to form unions and engage in collective bargaining, protected under USMCA.)##
+      (""entity""<|>Asociaci처n Sindical de Pilotos Aviadores de M챕xico<|>Organization<|>Mexican pilots' union that filed the petition regarding labor rights violations at Mas Air.)##
+      (""entity""<|>July 31, 2023<|>Date<|>Date on which the Interagency Labor Committee received the RRM petition from ASPA.)##
+      (""entity""<|>May 9, 2023<|>Date<|>Date of the legitimization vote alleged to have irregularities in connection with the labor rights review.)##
+      (""entity""<|>Interagency Labor Committee<|>Organization<|>Committee co-chaired by the United States Trade Representative and Secretary of Labor; responsible for monitoring labor rights under USMCA.)##
+
+      Target:
+      (""entity""<|>Mas Air<|>Facility<|>Airline company involved in alleged worker rights violations at its facility, specifically regarding union affiliation.)##
+      (""entity""<|>United States<|>Country<|>North American country that submitted a request for review regarding worker rights at Mas Air.)##
+      (""entity""<|>Mexico<|>Country<|>North American country requested to review worker rights issues at Mas Air.)##
+      (""entity""<|>May 9, 2023<|>Date<|>Date of the legitimization vote related to the allegations against Mas Air.)##
+      (""entity""<|>ILC<|>Organization<|>International Labor Commission responsible for reviewing petitions related to labor rights.)##
+      (""entity""<|>Request for review<|>Document<|>Formal request submitted by the United States Trade Representative to Mexico regarding labor rights at Mas Air.)##
+
+      Output:
+      ("relationship"<|>Aerotransportes Mas de Carga<|>Mas Air<|>Aerotransportes Mas de Carga operates commercially as Mas Air, so they are the same airline under investigation.<|>corporate_identity,alias,same_entity<|>10)##
+      ("relationship"<|>United States<|>Request for review<|>The United States drafted and submitted the formal Request for Review over alleged labor-rights violations at Mas Air.<|>submission,labor_complaint,RRM<|>9)##
+      ("relationship"<|>Rapid Response Labor Mechanism<|>Request for review<|>The Request for Review was filed under the USMCA’s Rapid Response Labor Mechanism.<|>RRM_process,enforcement,USMCA<|>8)##
+      ("relationship"<|>USMCA<|>Request for review<|>USMCA provides the legal framework that allows the Request for Review to proceed.<|>trade_agreement,legal_basis,labor_rights<|>8)##
+      ("relationship"<|>Asociación Sindical de Pilotos Aviadores de México<|>Request for review<|>ASPA’s petition was the trigger for issuing the Request for Review.<|>union_petition,trigger_action<|>7)##
+      ("relationship"<|>Interagency Labor Committee<|>ILC<|>The Interagency Labor Committee reviewed ASPA’s petition before forwarding it to the ILC for formal investigation.<|>oversight,petition_review<|>7)##
+      ("relationship"<|>United States<|>Mexico<|>The United States formally asked Mexico to investigate alleged labor-rights violations at Mas Air.<|>bilateral_request,labor_enforcement<|>9)##<|COMPLETE|>
+
+
+  tuple_delimiter: "<|>"
+  record_delimiter: "##"
+  completion_delimiter: "<|COMPLETE|>"
+
+  system_prompt: >
+    You are an expert in entity and relationship extraction.  
+    Given a text and a list of target entity types, extract structured information
+    about the entities, their descriptions, relationships, and overarching themes.
+
+
+  prompt_template: |
+    ---Goal---
+    Given a pair of text document that is potentially relevant to this activity and a
+    list of entity types, identify all relationships among the identified entities.  
+    Use **{language}** as the output language.
+    The output should be a list of relationships between entities, with each relationship
+
+    ---Steps---
+    1. Using only the tuples provided in the **Source** and **Target** blocks, examine every
+      possible source-entity ↔ target-entity pair and decide whether a direct,
+      meaningful relationship exists in the context given.  
+      **→ Always place the entity from the *Source* list first and the entity from the *Target* list second in every relationship you output.**  
+      **→ Do NOT create any relationship between two Source entities or between two Target entities.  Only Source-to-Target pairs are allowed.**
+
+    2. For each related pair, output one record in the format  
+      ("relationship"<tuple_delimiter><source_entity_name><tuple_delimiter>
+        <target_entity_name><tuple_delimiter><relationship_description>
+        <tuple_delimiter><relationship_keywords><tuple_delimiter>
+        <relationship_strength>)
+      · **relationship_description**: 1 concise sentence.  
+      · **relationship_keywords**: 3–5 comma-separated high-level tags.  
+      · **relationship_strength**: integer 1–10 (10 = very strong).
+
+    3. Return **all** relationship records as a single list, joined with
+      **{record_delimiter}**.  
+      Finish the entire output with **{completion_delimiter}**.
+
+
+    ---Examples---
+      {examples}
+
+    ---Input Text---
+    Text:
+    Sourcce :
+    {source_text}
+
+    Target : 
+    {target_text}
+
+    ---Output---

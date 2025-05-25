@@ -1,0 +1,210 @@
+model :
+  model_name: gpt-4o-mini
+  temperature: 0.3
+  max_tokens: 2048
+  api_key: ${oc.env:TEAM1_OPENAI_API_KEY}
+
+prompt_entity:
+  id: base_prompt_v1
+  updated_by : oogie
+  description: >
+    Extract entities and their relationships from a given text based on specified types,
+    and return structured representations for downstream knowledge graph construction.
+  language : "English"
+
+  
+  entity_types:
+    # 1. Geography & Facilities
+    - Country
+    - Region
+    - Location
+    - Port
+    - Facility
+
+    # 2. Legal, Policy & Trade Instruments
+    - Contract
+    - Agreement
+    - Quota
+    - Regulation
+    - Policy
+    - DesignationStatus
+    - EligibilityCriteria
+    - TariffMeasure
+
+    # 3. Products, Materials & Sectors
+    - Product
+    - ProductCategory
+    - Material
+    - Industry
+    - Technology
+
+    # 4. Logistics & Supply-chain Flows
+    - Shipment
+    - DeliveryStatus
+    - DemandForecast
+    - TradeFlow
+    - Date
+
+    # 5. Risk, Issues & Crisis
+    - RiskEvent
+    - Crisis
+    - Issue
+    - LaborRight
+    - Mitigation
+
+    # 6. Economic Metrics
+    - EconomicIndicator
+
+    # 7. Actions, Intentions & Effects
+    - Action
+    - Intention
+    - Effect
+
+    # 8. Documents & Processes
+    - Document
+    - ReviewProcess
+
+  entity_types_descriptions:
+    # 1. Geography & Facilities
+    Country:          "Sovereign state participating in production, trade, regulation, or diplomacy."
+    Region:           "Broader geographic or economic area (e.g., EU, Southeast Asia) used for macro-level analysis."
+    Location:         "Specific city or locality referenced as the venue of an event or activity."
+    Port:             "Sea or air port; include location, annual throughput, and key shipping routes."
+    Facility:         "Factory, warehouse, or distribution center; include location, capacity, and operator."
+
+    # 2. Legal, Policy & Trade Instruments
+    Contract:         "Binding supply or purchase agreement; include parties, term, value, key terms, and Incoterms."
+    Agreement:        "Formal bilateral or multilateral trade/economic treaty or framework between nations or organizations."
+    Quota:            "Numerical limit on imports/exports for a product or market, including threshold and validity period."
+    Regulation:       "Statutory rule or directive; include effective date, issuing authority, scope, and key provisions."
+    Policy:           "Strategic plan or guideline issued by a government or company; include objectives and implementation scope."
+    DesignationStatus: "Special status such as tariff privilege or sanction; include granting body and validity period."
+    EligibilityCriteria: "Conditions that must be met to qualify for a privilege, program, or agreement."
+    TariffMeasure:    "Customs duty rate or adjustment; include HS code, rate, and date of application."
+
+    # 3. Products, Materials & Sectors
+    Product:          "End product or component; include name/model, key specs, and market application."
+    ProductCategory:  "Higher-level grouping of products (e.g., batteries, semiconductors)."
+    Material:         "Raw material or sub-component; include grade/specification and sourcing region."
+    Industry:         "Economic sector such as automotive, electronics, or pharmaceuticals."
+    Technology:       "Specific tech or process; include application area, maturity level, and trade relevance."
+
+    # 4. Logistics & Supply-chain Flows
+    Shipment:         "Individual consignment; include ID, origin, destination, date, and volume."
+    DeliveryStatus:   "Latest status update for a shipment (In Transit, Delayed, Delivered) plus timestamp."
+    DemandForecast:   "Projected demand for a product/region over a period; include value, unit, and source."
+    TradeFlow:        "Aggregated import/export movement between regions or countries over a time window."
+    Date:             "Calendar reference (exact date, month, quarter, or year) linked to events or policies."
+
+    # 5. Risk, Issues & Crisis
+    RiskEvent:        "Discrete event posing risk (natural disaster, sanction, strike); include start date and impact."
+    Crisis:           "High-impact disruption affecting supply chains or trade relations."
+    Issue:            "Policy or trade concern under negotiation or dispute."
+    LaborRight:       "Worker-rights topic (e.g., forced labor); include legal basis and compliance status."
+    Mitigation:       "Action plan to reduce risk (multi-sourcing, buffer stock); include implementer and expected effect."
+
+    # 6. Economic Metrics
+    EconomicIndicator: "Metric such as GDP, trade deficit, or PMI that gauges economic or trade performance."
+
+    # 7. Actions, Intentions & Effects
+    Action:           "Specific act (announce, impose, sign) taken by an entity at a given time."
+    Intention:        "Stated objective or goal behind a policy or negotiation."
+    Effect:           "Observed or expected impact resulting from a policy, agreement, or event."
+
+    # 8. Documents & Processes
+    Document:         "Official publication such as press release, report, or statement; include title and issuer."
+    ReviewProcess:    "Formal evaluation or compliance check; include responsible body, stages, and timeline."
+
+
+  examples:
+    - |
+      Example 1:
+
+      Entity_types: [Country, Region, Port, Facility, Product, Material, Shipment, Contract, Regulation, Policy, RiskEvent, Mitigation, DemandForecast, DeliveryStatus, Date]
+
+      Text:
+      On 27 May 2025, Samsung Electronics signed a long-term supply contract with Foxconn to secure lithium-ion battery cells for its new Galaxy Z Ultra foldable smartphone.  
+      The cells will be shipped from Vietnam to Samsung’s Gumi assembly plant in North Gyeongsang Province, South Korea.  
+      They are scheduled to depart Busan Port under booking SZX12345 and are currently listed as “In Transit.”  
+      The deal complies with South Korea’s new Semiconductor Export Regulation and aligns with Samsung’s ESG procurement policy.  
+      A recent forecast projects quarterly demand of 1.8 million units for the Galaxy Z Ultra.  
+      To counter an approaching typhoon expected to make landfall in the region on 5 June 2025, Samsung activated a multi-sourcing plan that includes alternate suppliers in Vietnam.
+
+      Output:
+      ("entity"<|>27 May 2025<|>Date<|>Calendar date on which the supply contract was signed.)##
+      ("entity"<|>Supply contract<|>Contract<|>Agreement between Samsung Electronics and Foxconn to supply lithium-ion battery cells; one-year term; value about USD 30 million; Incoterms CIF.)##
+      ("entity"<|>Lithium-ion battery cells<|>Material<|>Rechargeable cells (3.7 V, 4000 mAh) used in mobile devices; sourced in Vietnam.)##
+      ("entity"<|>Galaxy Z Ultra<|>Product<|>Foldable OLED smartphone model featuring 7.6-inch display and 5G connectivity.)##
+      ("entity"<|>Vietnam<|>Country<|>Southeast-Asian nation; origin country for the battery-cell shipment.)##
+      ("entity"<|>North Gyeongsang Province<|>Region<|>Province in southeastern South Korea with heavy-industry clusters and logistics hubs.)##
+      ("entity"<|>Gumi assembly plant<|>Facility<|>Samsung smartphone assembly facility with annual capacity of roughly 50 million units.)##
+      ("entity"<|>Busan Port<|>Port<|>Major container port in South Korea; handles >20 million TEU annually.)##
+      ("entity"<|>SZX12345<|>Shipment<|>Ocean-freight booking departing Busan on 1 June 2025; 10 000 cartons of battery cells.)##
+      ("entity"<|>Delivery status<|>DeliveryStatus<|>Shipment SZX12345 status “In Transit” as of 2 June 2025 with ETA 10 June 2025.)##
+      ("entity"<|>Semiconductor Export Regulation<|>Regulation<|>South-Korean law effective 1 Apr 2025 imposing licensing requirements on semiconductor exports.)##
+      ("entity"<|>ESG procurement policy<|>Policy<|>Corporate policy requiring suppliers to meet environmental and social standards.)##
+      ("entity"<|>Typhoon<|>RiskEvent<|>Tropical cyclone forecast to hit North Gyeongsang on 5 June 2025, threatening logistics.)##
+      ("entity"<|>Multi-sourcing plan<|>Mitigation<|>Mitigation strategy that activates alternate Vietnamese suppliers to reduce typhoon risk.)##
+      ("entity"<|>Demand forecast<|>DemandForecast<|>Q3 2025 forecast estimating demand for 1.8 million Galaxy Z Ultra units in the EMEA region.)##
+      ("relationship"<|>Supply contract<|>Lithium-ion battery cells<|>The contract secures battery-cell supply for smartphone production.<|>material_supply<|>9)##
+      ("relationship"<|>Supply contract<|>Gumi assembly plant<|>Cells procured under the contract will be delivered to the Gumi plant.<|>delivery_destination<|>8)##
+      ("relationship"<|>SZX12345<|>Busan Port<|>Shipment SZX12345 departs from Busan Port bound for Gumi.<|>port_departure<|>7)##
+      ("relationship"<|>Delivery status<|>SZX12345<|>Delivery status refers to shipment SZX12345.<|>status_update<|>7)##
+      ("relationship"<|>Demand forecast<|>Galaxy Z Ultra<|>High demand drives the volume specified in the contract.<|>demand_driver<|>8)##
+      ("relationship"<|>Semiconductor Export Regulation<|>Supply contract<|>The contract complies with the export regulation.<|>regulatory_compliance<|>6)##
+      ("relationship"<|>Multi-sourcing plan<|>Typhoon<|>The plan was triggered by the forecasted typhoon risk.<|>risk_response<|>9)##
+      ("content_keywords"<|>electronics manufacturing, battery supply, trade compliance, logistics disruption, demand forecasting, risk mitigation)<|COMPLETE|>
+
+
+
+
+  tuple_delimiter: "<|>"
+  record_delimiter: "##"
+  completion_delimiter: "<|COMPLETE|>"
+
+  system_prompt: >
+    You are an expert in entity and relationship extraction. Given a text and a list of target entity types,
+    extract structured information about the entities, their descriptions, relationships, and overarching themes.
+
+  prompt_template: |
+    ---Goal---
+    Given a text document that is potentially relevant to this activity and a list of entity types,
+    identify all entities of those types and all relationships among the identified entities.
+    Use {language} as output language.
+
+    ---Entity Type Reference---
+    {entity_types_reference}
+    ---------------------------------
+
+    ---Steps---
+    1. Identify all entities. For each identified entity, extract the following:
+      - entity_name
+      - entity_type (one of: {entity_types})
+      - entity_description (detailed description of attributes and activities)
+      Format:
+      ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+    2. From step 1, identify all clearly related entity pairs and extract:
+      - source_entity, target_entity
+      - relationship_description
+      - relationship_keywords (high-level conceptual keywords)
+      - relationship_strength (1 to 10)
+      Format:
+      ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_keywords>{tuple_delimiter}<relationship_strength>)
+
+    3. Identify and summarize high-level concepts present in the document:
+      Format:
+      ("content_keywords"{tuple_delimiter}<high_level_keywords>)
+
+    4. Return all outputs as a single list, using **{record_delimiter}** as separator.
+      End the output with {completion_delimiter}.
+
+    ---Examples---
+      {examples}
+
+    ---Input Text---
+    Entity_types: [{entity_types}]
+    Text:
+    {input_text}
+
+    ---Output---

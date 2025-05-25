@@ -1,0 +1,6 @@
+.env
+**/__pycache__/
+outputs/
+entity_outputs/
+data/
+supplychainGraph/

@@ -1,0 +1,141 @@
+model :
+  model_name: gpt-4o-mini
+  temperature: 0.3
+  max_tokens: 2048
+  api_key: ${oc.env:TEAM1_OPENAI_API_KEY}
+
+prompt_entity:
+  id: base_prompt_v1
+  updated_by : oogie
+  description: >
+    Extract entities and their relationships from a given text based on specified types,
+    and return structured representations for downstream knowledge graph construction.
+  language : "English"
+
+  
+  entity_types:
+    - AGREEMENT
+    - TRADE_POLICY
+    - ORG
+    - ADJUDICATOR
+    - EVENT / CASE
+    - POSITION
+    - PERSON
+    - ECONOMIC_TERM / RIGHT
+    - ECONOMIC_POLICY
+    - ACTION
+    - ECONOMIC_CONCEPT
+    - TRADE_BARRIER
+    - DISPUTE_RESOLUTION
+    - GOVERNMENT / ADMINISTRATION
+
+  entity_descriptions:
+  AGREEMENT: Inter-governmental agreements or treaties between countries (e.g., USMCA, FTA, WTO agreements).
+  TRADE_POLICY: Trade policies or measures defined within a country or agreement (e.g., TRQ policy, import allocation, subsidies).
+  ORG: Organizations such as governments, international bodies, industry associations, committees (e.g., USTR, USDEC).
+  ADJUDICATOR: Panels or bodies that hand down legal/administrative judgments; a subtype of ORG.
+  EVENT: Discrete events or cases at a point in time (e.g., maize-ban dispute filing, first RRM case).
+  POSITION: Roles or titles held by individuals (e.g., U.S. Trade Representative, President).
+  PERSON: Specific individuals (e.g., Katherine Tai, Joe Biden).
+  ECONOMIC_TERM: Economic terms/rights (e.g., market access, import rights).
+  ECONOMIC_POLICY: National or agreement-level economic doctrines (e.g., protectionism, free trade).
+  ACTION: Concrete acts or procedural steps (e.g., request panel, impose tariff, notify).
+  ECONOMIC_CONCEPT: General economic concepts (e.g., fair competition, efficiency).
+  TRADE_BARRIER: Measures that restrict trade (e.g., GM-maize import ban, tariffs, NTBs).
+  DISPUTE_RESOLUTION: Formal procedures for resolving disputes within an agreement (e.g., USMCA Chapter 31 process).
+  GOVERNMENT: Specific governments/administrations (e.g., Biden Administration, Trudeau Government).
+
+  examples:
+  - |
+    Example 1:
+
+    Entity_types: [AGREEMENT, TRADE_POLICY, ORG, ADJUDICATOR, EVENT, POSITION, PERSON,
+                   ECONOMIC_TERM, ECONOMIC_POLICY, ACTION, ECONOMIC_CONCEPT,
+                   TRADE_BARRIER, DISPUTE_RESOLUTION, GOVERNMENT]
+
+    Text:
+    On 30 August 2023 the **Biden Administration** (U.S. Government) announced that,
+    under the **USMCA** trade **Agreement**, it had filed an official **request for a dispute-settlement panel**
+    (Action) against Mexico’s **GM-maize import ban** (Trade_Barrier).
+    The ban is rooted in Mexico’s **Decree on Genetically Modified Corn** (Trade_Policy),
+    which Washington argues violates US corn exporters’ **market-access** (Economic_Term) rights
+    and undermines **fair competition** (Economic_Concept).
+    The case, titled **“USMCA Maize Ban Dispute (2023)”** (Event),
+    will be heard by an independent **USMCA Panel** (Adjudicator),
+    overseen through the agreement’s **Chapter 31 dispute-resolution process** (Dispute_Resolution).
+    During a WTO press briefing, **U.S. Trade Representative Katherine Tai** (Person, Position)
+    criticized Mexico’s “creeping **protectionism**” (Economic_Policy).
+
+    Output:
+    ("entity"<|>USMCA<|>AGREEMENT<|>Tri-national free-trade agreement among the United States, Mexico, and Canada.)##
+    ("entity"<|>"Decree on Genetically Modified Corn"<|>TRADE_POLICY<|>Mexican policy restricting imports of GM yellow corn for human consumption.)##
+    ("entity"<|>USTR<|>ORG<|>Office of the United States Trade Representative, executive agency handling U.S. trade policy.)##
+    ("entity"<|>"USMCA Panel"<|>ADJUDICATOR<|>Independent five-member panel empowered to adjudicate Chapter 31 disputes.)##
+    ("entity"<|>"USMCA Maize Ban Dispute (2023)"<|>EVENT<|>Case initiated 30 Aug 2023 challenging Mexico’s GM-maize ban.)##
+    ("entity"<|>"U.S. Trade Representative"<|>POSITION<|>Cabinet-level official leading U.S. trade negotiations.)##
+    ("entity"<|>Katherine Tai<|>PERSON<|>U.S. Trade Representative since 2021.)##
+    ("entity"<|>"market access"<|>ECONOMIC_TERM<|>Right of exporters to sell goods in foreign markets without unjust barriers.)##
+    ("entity"<|>protectionism<|>ECONOMIC_POLICY<|>Policy stance favoring trade restrictions to shield domestic producers.)##
+    ("entity"<|>"request for dispute-settlement panel"<|>ACTION<|>Formal step taken by the U.S. on 30 Aug 2023 under USMCA rules.)##
+    ("entity"<|>"fair competition"<|>ECONOMIC_CONCEPT<|>Principle that all firms compete on equal terms without distortive measures.)##
+    ("entity"<|>"GM-maize import ban"<|>TRADE_BARRIER<|>Mexican restriction blocking U.S. GM yellow-corn imports.)##
+    ("entity"<|>"Chapter 31 dispute-resolution process"<|>DISPUTE_RESOLUTION<|>USMCA mechanism for resolving state-to-state disputes.)##
+    ("entity"<|>"Biden Administration"<|>GOVERNMENT<|>Executive branch of the U.S. federal government (2021-present).)##
+    ("relationship"<|>"GM-maize import ban"<|>market access<|>The ban limits U.S. exporters’ market-access rights.<|>barrier_to_market<|>9)##
+    ("relationship"<|>USMCA<|>"request for dispute-settlement panel"<|>The action is taken under USMCA rules.<|>legal_basis<|>8)##
+    ("relationship"<|>"USMCA Panel"<|>"USMCA Maize Ban Dispute (2023)"<|>Panel will adjudicate the case.<|>hear_dispute<|>8)##
+    ("relationship"<|>"Chapter 31 dispute-resolution process"<|>"USMCA Panel"<|>Process governs panel composition and timeline.<|>procedural_framework<|>7)##
+    ("relationship"<|>Katherine Tai<|>"request for dispute-settlement panel"<|>Tai announced and filed the panel request.<|>official_action<|>7)##
+    ("content_keywords"<|>USMCA, GM corn, market access, protectionism, dispute settlement, fair competition)<|COMPLETE|>
+
+
+  tuple_delimiter: "<|>"
+  record_delimiter: "##"
+  completion_delimiter: "<|COMPLETE|>"
+
+  system_prompt: >
+    You are an expert in entity and relationship extraction. Given a text and a list of target entity types,
+    extract structured information about the entities, their descriptions, relationships, and overarching themes.
+
+  prompt_template: |
+    ---Goal---
+    Given a text document that is potentially relevant to this activity and a list of entity types,
+    identify all entities of those types and all relationships among the identified entities.
+    Use {language} as output language.
+
+    ---Entity Type Reference---
+    {entity_types_reference}
+    ---------------------------------
+
+    ---Steps---
+    1. Identify all entities. For each identified entity, extract the following:
+      - entity_name
+      - entity_type (one of: {entity_types})
+      - entity_description (detailed description of attributes and activities)
+      Format:
+      ("entity"{tuple_delimiter}<entity_name>{tuple_delimiter}<entity_type>{tuple_delimiter}<entity_description>)
+
+    2. From step 1, identify all clearly related entity pairs and extract:
+      - source_entity, target_entity
+      - relationship_description
+      - relationship_keywords (high-level conceptual keywords)
+      - relationship_strength (1 to 10)
+      Format:
+      ("relationship"{tuple_delimiter}<source_entity>{tuple_delimiter}<target_entity>{tuple_delimiter}<relationship_description>{tuple_delimiter}<relationship_keywords>{tuple_delimiter}<relationship_strength>)
+
+    3. Identify and summarize high-level concepts present in the document:
+      Format:
+      ("content_keywords"{tuple_delimiter}<high_level_keywords>)
+
+    4. Return all outputs as a single list, using **{record_delimiter}** as separator.
+      End the output with {completion_delimiter}.
+
+    ---Examples---
+      {examples}
+
+    ---Input Text---
+    Entity_types: [{entity_types}]
+    Text:
+    {input_text}
+
+    ---Output---
